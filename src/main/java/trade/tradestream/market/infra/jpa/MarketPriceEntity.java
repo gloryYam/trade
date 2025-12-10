@@ -1,9 +1,13 @@
-package trade.tradestream.market.domain;
+package trade.tradestream.market.infra.jpa;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+
 @Entity
+@Getter
 @Table(name = "market_price")
 @NoArgsConstructor
 public class MarketPriceEntity {
@@ -20,4 +24,10 @@ public class MarketPriceEntity {
 
     @Column(nullable = false)
     private Instant updatedAt;
+
+    public MarketPriceEntity(String symbol, double price, Instant updatedAt) {
+        this.symbol = symbol;
+        this.price = price;
+        this.updatedAt = updatedAt;
+    }
 }
