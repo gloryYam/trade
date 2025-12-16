@@ -6,6 +6,13 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+**/.gradle/
+**/build/
+caches/
+**/caches/
+wrapper/dists/
+**/wrapper/dists/
+
 ### STS ###
 .apt_generated
 .classpath
@@ -40,5 +47,10 @@ out/
 caches/
 tmp/
 
-# daemon logs
-daemon/**/*.log
+# logs
+*.log
+*.out
+*.out.log
+
+# daemon folder
+daemon/
