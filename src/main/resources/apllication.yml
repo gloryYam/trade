@@ -1,4 +1,9 @@
 spring:
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 3s
+
   h2:
     console:
       enable: true
@@ -7,6 +12,7 @@ spring:
       driver-class-name: org.h2.Driver
       username: sa
       password: password
+
     jpa:
       hibernate:
         ddl-auto: create-drop
@@ -15,8 +21,17 @@ spring:
           format_sql: true        #sql format 예쁘게
           highlight_sql: true     #sql 색칠해서
           use_sql_comments: true  #주석으로 부가정보 더 표시
+
 logging:
   level:
     org:
       hibernate:
         SQL: debug
+
+snapshot:
+  threshold: 0.005
+
+  redis:
+    latest-price:
+      key-prefix: "price:"
+      ttl: 10s

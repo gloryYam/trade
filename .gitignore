@@ -39,3 +39,6 @@ out/
 .vscode/
 caches/
 tmp/
+
+# daemon logs
+daemon/**/*.log
