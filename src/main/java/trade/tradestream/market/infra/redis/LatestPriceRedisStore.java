@@ -3,14 +3,15 @@ package trade.tradestream.market.infra.redis;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.ObjectMapper;
 import trade.tradestream.market.domain.PriceTick;
 import trade.tradestream.market.infra.config.redis.LatestPriceRedisProperties;
 
 import java.util.Optional;
 
+/**
+ * “저장소(캐시)”
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -41,7 +42,7 @@ public class LatestPriceRedisStore {
         String key = keyOf(normalized);
 
         try {
-            return Optional.ofNullable((redisTemplate.opsForValue().get(key));
+            return Optional.ofNullable((redisTemplate.opsForValue().get(key)));
         } catch (Exception e) {
             log.warn("Failed to read latest price cache. key={}", key, e);
             return Optional.empty();
@@ -57,4 +58,5 @@ public class LatestPriceRedisStore {
         String s = symbol.trim();
         return s.isEmpty() ? "" : s.toUpperCase();
     }
+}
  

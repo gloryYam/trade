@@ -26,6 +26,7 @@ public class LatestPriceRedisConfig {
         template.setKeySerializer(keySerializer);
         template.setValueSerializer(valueSerializer);
         template.afterPropertiesSet();
+
         return template;
     }
 }
