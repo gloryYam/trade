@@ -32,7 +32,7 @@ public class BinanceBookTickerWsClient {
 
     public void start() {
         for(String raw : binanceWsProperties.getSymbols()) {
-
+            log.info("12/18 목요일 예정");
         }
     }
 }
