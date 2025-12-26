@@ -540,6 +540,35 @@ class OrderIntegrationTest {
 
 ---
 
+## 추가 문서
+
+이 프로젝트의 상세 정보는 다음 문서에서 확인할 수 있습니다:
+
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - 시스템 아키텍처 상세 설계
+  - 전체 시스템 구조 및 컴포넌트 간 통신
+  - Binance WebSocket 연동 상세 구현
+  - Redis 캐싱 전략 및 분산 락 설계
+  - 이벤트 드리븐 아키텍처 (Spring Events, Kafka)
+  - JWT 인증 흐름 및 보안 설정
+  - 성능 최적화 전략 및 확장성 고려사항
+
+- **[API.md](./API.md)** - REST API 명세서
+  - 모든 엔드포인트 상세 스펙 (인증, 계좌, 주문, 포지션, 시장 가격)
+  - 요청/응답 예시 및 에러 코드
+  - Rate Limiting 정책
+  - 페이지네이션 및 필터링
+  - Postman Collection 사용법
+
+- **[DATABASE.md](./DATABASE.md)** - 데이터베이스 스키마 및 설계
+  - ERD (Entity Relationship Diagram)
+  - 테이블 스키마 및 JPA Entity 예시
+  - 인덱스 전략 및 성능 최적화
+  - 제약조건 및 데이터 타입 선택 이유
+  - Flyway 마이그레이션 파일
+  - 백업 전략 및 복구 절차
+
+---
+
 ## 참고 자료
 
 - Binance WebSocket API: https://binance-docs.github.io/apidocs/spot/en/#websocket-market-streams
