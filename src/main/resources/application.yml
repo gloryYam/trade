@@ -1,26 +1,32 @@
 spring:
+  # Redis 설정 - 실시간 가격 캐싱 및 분산 락에 사용
   redis:
     host: localhost
     port: 6379
     timeout: 3s
 
+  # H2 인메모리 데이터베이스 - 개발/테스트용
+  # 운영 환경에서는 PostgreSQL 또는 MySQL로 교체 예정
   h2:
     console:
-      enable: true
-    datasource:
-      url: dbc:h2:mem:testdb
-      driver-class-name: org.h2.Driver
-      username: sa
-      password: password
+      enabled: true  # H2 웹 콘솔 활성화 (http://localhost:8080/h2-console)
 
-    jpa:
+  # 데이터소스 설정
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+
+  # JPA/Hibernate 설정
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # 애플리케이션 시작 시 테이블 생성, 종료 시 삭제 (개발용)
+    properties:
       hibernate:
-        ddl-auto: create-drop
-      properties:
-        hibernate:
-          format_sql: true        #sql format 예쁘게
-          highlight_sql: true     #sql 색칠해서
-          use_sql_comments: true  #주석으로 부가정보 더 표시
+        format_sql: true        # SQL 포맷 예쁘게 출력
+        highlight_sql: true     # SQL 색칠해서 출력
+        use_sql_comments: true  # 주석으로 부가정보 더 표시
 
 logging:
   level:

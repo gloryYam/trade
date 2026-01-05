@@ -577,3 +577,273 @@ class OrderIntegrationTest {
 - Redisson: https://github.com/redisson/redisson
 - Clean Code (Robert C. Martin)
 - Refactoring (Martin Fowler)
+
+
+## 작업 방식 선호사항
+
+- 코드는 기본적으로 **코드블록으로만 제시**
+- 사용자가 직접 복사해서 파일에 붙여넣기
+- **명시적 요청이 있을 때만** 직접 편집 (예: "이거 직접 편집해줘")
+
+---
+
+## 점진적 개발 방식 (Incremental Development)
+
+이 프로젝트는 **실무 개발 프로세스**를 따라 점진적으로 개발합니다.
+
+### 개발 원칙
+
+**❌ 한 번에 완벽한 코드 작성 (안티패턴)**
+```
+처음부터 모든 기능 구현
+├── 완벽한 검증 로직
+├── 모든 예외 처리
+├── DTO, 변환 로직
+├── 상세한 주석
+└── 최적화된 코드
+
+→ 이건 "완성된 예시"이지 "개발 과정"이 아님
+→ 실무에서는 이렇게 일하지 않음
+```
+
+**✅ 점진적 개발 (실무 방식)**
+```
+Step 1: 최소 동작 코드 (Walking Skeleton)
+   └── 가장 기본적인 기능만 구현
+   └── 동작하는 것이 목표
+
+Step 2: 동작 확인
+   └── 실제로 실행해서 테스트
+   └── API 호출, DB 확인
+
+Step 3: 문제 발견 & 기능 추가
+   └── "음수 잔고가 들어가네?" → 검증 추가
+   └── "null 처리 필요해" → 예외 처리 추가
+   └── "Entity 노출은 위험해" → DTO 추가
+
+Step 4: 리팩토링
+   └── 코드 개선
+   └── 주석 추가
+   └── 최적화
+```
+
+### 실무 개발 프로세스
+
+#### 1단계: Walking Skeleton (최소 골격)
+
+**목표:** 최대한 빨리 동작하는 코드 만들기
+
+```java
+// ✅ 최소한의 Entity
+@Entity
+public class Account {
+    @Id @GeneratedValue
+    private Long id;
+    private Long userId;
+    private BigDecimal balance;
+
+    // 생성 메서드만
+    public static Account create(Long userId, BigDecimal balance) {
+        Account account = new Account();
+        account.userId = userId;
+        account.balance = balance;
+        return account;
+    }
+}
+
+// ✅ 기본 Repository
+interface AccountRepository extends JpaRepository<Account, Long> {}
+
+// ✅ 기본 Service (CRUD만)
+@Service
+class AccountService {
+    public Account create(Long userId, BigDecimal balance) {
+        return repository.save(Account.create(userId, balance));
+    }
+
+    public Account getById(Long id) {
+        return repository.findById(id).orElse(null);
+    }
+}
+
+// ✅ 기본 Controller
+@RestController
+class AccountController {
+    @PostMapping
+    public Account create(@RequestParam Long userId, @RequestParam BigDecimal balance) {
+        return service.create(userId, balance);
+    }
+}
+```
+
+**특징:**
+- 검증 없음 (음수 가능)
+- 예외 처리 없음 (null 반환)
+- DTO 없음 (Entity 직접 노출)
+- 주석 없음
+
+**→ 이건 의도적! 다음 단계에서 추가할 것**
+
+#### 2단계: 동작 확인
+
+```bash
+# 서버 실행
+./gradlew bootRun
+
+# API 테스트 (Postman, curl)
+curl -X POST "http://localhost:8080/api/accounts?userId=1&balance=10000"
+
+# H2 콘솔 확인
+http://localhost:8080/h2-console
+```
+
+**확인 사항:**
+- API 호출 성공?
+- DB에 데이터 저장됨?
+- 조회 가능?
+
+#### 3단계: 문제 발견 → 기능 추가
+
+**발견 1: 음수 잔고가 저장되네?**
+```java
+// 검증 추가
+public static Account create(Long userId, BigDecimal balance) {
+    if (balance.compareTo(BigDecimal.ZERO) < 0) {
+        throw new IllegalArgumentException("잔고는 음수일 수 없습니다.");
+    }
+    // ...
+}
+```
+
+**발견 2: 계좌 없으면 null 반환되네?**
+```java
+// 예외 처리 추가
+public Account getById(Long id) {
+    return repository.findById(id)
+        .orElseThrow(() -> new AccountNotFoundException(id));
+}
+```
+
+**발견 3: Entity를 직접 노출하면 안 되겠어**
+```java
+// DTO 추가
+public record AccountResponse(Long id, Long userId, BigDecimal balance) {
+    public static AccountResponse from(Account account) {
+        return new AccountResponse(account.getId(), account.getUserId(), account.getBalance());
+    }
+}
+```
+
+#### 4단계: 리팩토링
+
+```java
+// 도메인 메서드 추가
+public void increaseBalance(BigDecimal amount) {
+    validateAmount(amount);
+    this.balance = this.balance.add(amount);
+}
+
+// 주석 추가
+/**
+ * 잔고 증가
+ * @param amount 증가시킬 금액 (양수만 허용)
+ */
+```
+
+### 개발 순서 예시
+
+**Account 도메인 개발:**
+
+```
+1. Entity 최소 구현 → Repository → Service → Controller
+   ├── 동작 확인
+   └── API 테스트
+
+2. 검증 로직 추가
+   ├── 음수 잔고 방지
+   ├── null 체크
+   └── 테스트
+
+3. 예외 처리 추가
+   ├── AccountNotFoundException
+   ├── InsufficientBalanceException
+   └── 테스트
+
+4. DTO 추가
+   ├── AccountResponse
+   ├── CreateAccountRequest
+   └── Controller 수정
+
+5. 도메인 로직 추가
+   ├── increaseBalance()
+   ├── decreaseBalance()
+   └── 테스트
+
+6. 주석 & 리팩토링
+```
+
+### TDD와의 연계
+
+실무에서는 TDD와 함께 사용:
+
+```
+1. Red: 실패하는 테스트 작성
+   @Test
+   void 음수_잔고로_계좌_생성_시_예외발생() {
+       assertThrows(IllegalArgumentException.class,
+           () -> Account.create(1L, BigDecimal.valueOf(-100)));
+   }
+
+2. Green: 최소한의 동작 코드
+   if (balance.compareTo(BigDecimal.ZERO) < 0) {
+       throw new IllegalArgumentException("음수 불가");
+   }
+
+3. Refactor: 코드 개선
+   private void validateBalance(BigDecimal balance) {
+       if (balance.compareTo(BigDecimal.ZERO) < 0) {
+           throw new IllegalArgumentException("잔고는 음수일 수 없습니다.");
+       }
+   }
+```
+
+### 핵심 원칙
+
+1. **최소 동작 코드부터 시작** - 완벽함보다 동작하는 것이 우선
+2. **빠른 피드백 루프** - 자주 실행하고 확인
+3. **필요할 때 추가** - 미리 예측하지 말고, 필요할 때 추가
+4. **작은 단위로 커밋** - 각 단계마다 커밋
+5. **테스트로 검증** - 기능 추가 시마다 테스트 작성
+
+### Claude Code 작업 지침
+
+**기본 원칙:**
+- 한 번에 모든 기능을 구현하지 말 것
+- 각 단계를 순차적으로 진행
+- 동작 확인 후 다음 단계로
+
+**코드 제시 방법:**
+```
+Step 1에서는:
+- Entity (최소 필드)
+- Repository (기본만)
+- Service (CRUD만)
+- Controller (기본 API만)
+
+Step 2에서는 동작 확인 후:
+- "검증이 필요하겠어요" → 검증 로직 추가 제안
+- "예외 처리가 필요하겠어요" → 예외 클래스 추가 제안
+
+Step 3에서는:
+- DTO 추가
+- 도메인 로직 추가
+
+Step 4에서는:
+- 리팩토링
+- 주석 추가
+```
+
+**금지 사항:**
+- ❌ 처음부터 완벽한 코드 작성
+- ❌ 아직 필요하지 않은 기능 미리 추가
+- ❌ 한 번에 여러 계층 동시 구현
