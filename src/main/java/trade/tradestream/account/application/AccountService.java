@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import trade.tradestream.account.domain.Account;
+import trade.tradestream.account.domain.AccountNotFoundException;
 import trade.tradestream.account.infra.AccountRepository;
 
 import java.math.BigDecimal;
@@ -29,18 +30,21 @@ public class AccountService {
 
     /**
      * ID로 계좌 조회
+     * @throws AccountNotFoundException 계좌가 존재하지 않을 때
      */
     public Account getAccount(Long accountId) {
 
         // Optional.orElse(null): 값이 없으면 null 반환
         // Step 3에서는 orElseThrow()로 변경 예정
-        return accountRepository.findById(accountId).orElse(null);
+        return accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException(accountId));
     }
 
     /**
-     * 사용자 ID로 계좌 조회
+     * 사용자 ID로 계좌 조회1
      */
     public Account getAccountByUserId(Long userId) {
-        return accountRepository.findByUserId(userId).orElse(null);
+        return accountRepository.findByUserId(userId).orElseThrow(
+            () -> new AccountNotFoundException(String.format("사용자 계좌를 찾을 수 없습니다. userId = %d", userId)));
     }
 }
