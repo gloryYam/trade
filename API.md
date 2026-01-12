@@ -217,135 +217,122 @@ Authorization: Bearer {JWT_TOKEN}
 
 ## 계좌 (Account)
 
-### 1. 내 계좌 조회
+> **구현 상태:** ✅ 완료 (2025-01-12)
+
+### 1. 계좌 생성 ✅
+
+**POST** `/api/accounts`
+
+새 계좌를 생성합니다.
+
+**요청:**
+```json
+{
+  "userId": 1,
+  "initialBalance": "10000.00"
+}
+```
+
+**필드 검증:**
+- `userId`: 필수, 양수
+- `initialBalance`: 필수, 양수
+
+**응답: 200 OK**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "userId": 1,
+    "balance": "10000.00"
+  },
+  "message": "성공",
+  "timestamp": "2025-01-12T10:30:00"
+}
+```
+
+**에러:**
+- `400` - 유효성 검증 실패 (음수 userId, 음수 잔고 등)
+
+---
+
+### 2. 계좌 ID로 조회 ✅
+
+**GET** `/api/accounts/{id}`
+
+특정 계좌 정보를 조회합니다.
+
+**응답: 200 OK**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "userId": 1,
+    "balance": "10000.00"
+  },
+  "message": "성공",
+  "timestamp": "2025-01-12T10:30:00"
+}
+```
+
+**에러:**
+- `404` - 존재하지 않는 계좌 (AccountNotFoundException)
+
+---
+
+### 3. 사용자 ID로 계좌 조회 ✅
+
+**GET** `/api/accounts/user/{userId}`
+
+사용자 ID로 계좌를 조회합니다.
+
+**응답: 200 OK**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "userId": 1,
+    "balance": "10000.00"
+  },
+  "message": "성공",
+  "timestamp": "2025-01-12T10:30:00"
+}
+```
+
+**에러:**
+- `404` - 해당 사용자의 계좌가 존재하지 않음
+
+---
+
+### 4. 내 계좌 조회 (예정)
 
 **GET** `/api/accounts/me`
 
+> ⏳ JWT 인증 구현 후 추가 예정
+
 현재 로그인한 사용자의 계좌 정보를 조회합니다.
 
-**요청 헤더:**
-```http
-Authorization: Bearer {JWT_TOKEN}
-```
-
-**응답: 200 OK**
-```json
-{
-  "success": true,
-  "data": {
-    "accountId": 1,
-    "userId": 1,
-    "balance": "10000.00000000",
-    "totalAssetValue": "15234.56789000",
-    "unrealizedPnL": "+1234.56789000",
-    "realizedPnL": "+500.00000000",
-    "createdAt": "2025-12-20T10:00:00Z",
-    "updatedAt": "2025-12-26T10:30:00Z"
-  },
-  "message": "계좌 조회 성공",
-  "timestamp": "2025-12-26T10:30:00Z"
-}
-```
-
-**필드 설명:**
-- `balance`: 사용 가능한 현금 잔고 (USDT)
-- `totalAssetValue`: 총 자산 가치 (현금 + 보유 포지션)
-- `unrealizedPnL`: 미실현 손익 (현재 보유 중인 포지션)
-- `realizedPnL`: 실현 손익 (매도 완료된 포지션)
-
 ---
 
-### 2. 계좌 ID로 조회
-
-**GET** `/api/accounts/{accountId}`
-
-특정 계좌 정보를 조회합니다. (본인 계좌만 조회 가능)
-
-**응답: 200 OK**
-```json
-{
-  "success": true,
-  "data": {
-    "accountId": 1,
-    "balance": "10000.00000000"
-  },
-  "message": "성공",
-  "timestamp": "2025-12-26T10:30:00Z"
-}
-```
-
-**에러:**
-- `403` - 다른 사용자의 계좌 조회 시도
-- `404` - 존재하지 않는 계좌
-
----
-
-### 3. 입금
+### 5. 입금 (예정)
 
 **POST** `/api/accounts/deposit`
 
+> ⏳ 추후 구현 예정
+
 모의투자 계좌에 자금을 입금합니다.
-
-**요청:**
-```json
-{
-  "amount": "1000.00000000"
-}
-```
-
-**응답: 200 OK**
-```json
-{
-  "success": true,
-  "data": {
-    "accountId": 1,
-    "previousBalance": "10000.00000000",
-    "depositAmount": "1000.00000000",
-    "newBalance": "11000.00000000",
-    "transactionId": "TXN123456789"
-  },
-  "message": "입금 완료",
-  "timestamp": "2025-12-26T10:30:00Z"
-}
-```
-
-**에러:**
-- `400` - 잘못된 금액 (음수, 0, 너무 큰 값)
 
 ---
 
-### 4. 출금
+### 6. 출금 (예정)
 
 **POST** `/api/accounts/withdraw`
 
+> ⏳ 추후 구현 예정
+
 계좌에서 자금을 출금합니다.
-
-**요청:**
-```json
-{
-  "amount": "500.00000000"
-}
-```
-
-**응답: 200 OK**
-```json
-{
-  "success": true,
-  "data": {
-    "accountId": 1,
-    "previousBalance": "11000.00000000",
-    "withdrawAmount": "500.00000000",
-    "newBalance": "10500.00000000",
-    "transactionId": "TXN123456790"
-  },
-  "message": "출금 완료",
-  "timestamp": "2025-12-26T10:30:00Z"
-}
-```
-
-**에러:**
-- `400` - 잘못된 금액
-- `409` - 잔고 부족
 
 ---
 
@@ -911,8 +898,10 @@ Initial Balance: 10000 USDT
 | 버전 | 날짜 | 변경 내용 |
 |-----|------|----------|
 | 1.0.0 | 2025-12-26 | 초기 API 명세 작성 |
-| 1.1.0 | (예정) | WebSocket 실시간 가격 스트림 추가 |
-| 1.2.0 | (예정) | 지정가 주문 기능 추가 |
+| 1.1.0 | 2025-01-12 | Account API 구현 완료 (생성, 조회) |
+| 1.2.0 | (예정) | Market API 구현 (WebSocket 실시간 가격) |
+| 1.3.0 | (예정) | Order API 구현 (주문 생성, 조회) |
+| 1.4.0 | (예정) | Auth API 구현 (JWT 인증) |
 
 ---
 

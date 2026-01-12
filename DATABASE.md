@@ -157,18 +157,18 @@ public class User {
 
 ---
 
-### 2. accounts (계좌)
+### 2. accounts (계좌) ✅ 구현 완료
 
 사용자의 모의투자 계좌 정보를 저장합니다.
+
+> **구현 상태:** ✅ 완료 (2025-01-12)
 
 ```sql
 CREATE TABLE accounts (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL UNIQUE,
-    balance DECIMAL(20, 8) NOT NULL DEFAULT 0.00000000,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    balance DECIMAL(19, 2) NOT NULL DEFAULT 0.00,
+    CONSTRAINT chk_accounts_balance_positive CHECK (balance >= 0)
 );
 
 CREATE INDEX idx_accounts_user_id ON accounts(user_id);
@@ -179,16 +179,14 @@ CREATE INDEX idx_accounts_user_id ON accounts(user_id);
 | 컬럼 | 타입 | Null | 설명 |
 |------|------|------|------|
 | `id` | BIGSERIAL | NO | 계좌 ID (PK) |
-| `user_id` | BIGINT | NO | 사용자 ID (FK, 유니크 - 1:1 관계) |
-| `balance` | DECIMAL(20, 8) | NO | 현금 잔고 (USDT) |
-| `created_at` | TIMESTAMP | NO | 계좌 생성 일시 |
-| `updated_at` | TIMESTAMP | NO | 수정 일시 |
+| `user_id` | BIGINT | NO | 사용자 ID (유니크) |
+| `balance` | DECIMAL(19, 2) | NO | 현금 잔고 (KRW) |
 
 **제약조건:**
 - `balance >= 0` (체크 제약조건 - 잔고는 음수가 될 수 없음)
 - `user_id` UNIQUE (한 사용자는 하나의 계좌만 보유)
 
-**JPA Entity:**
+**JPA Entity (실제 구현):**
 ```java
 @Entity
 @Table(name = "accounts")
@@ -200,42 +198,63 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private Long userId;
 
-    @Column(nullable = false, precision = 20, scale = 8)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal balance;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    // 정적 팩토리 메서드 (검증 포함)
+    public static Account create(Long userId, BigDecimal initialBalance) {
+        validateUserId(userId);
+        validateBalance(initialBalance);
 
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+        Account account = new Account();
+        account.userId = userId;
+        account.balance = initialBalance;
+        return account;
+    }
 
-    // 도메인 메서드
-    public void deductBalance(BigDecimal amount) {
+    // 잔고 증가
+    public void increaseBalance(BigDecimal amount) {
+        validateAmount(amount);
+        this.balance = this.balance.add(amount);
+    }
+
+    // 잔고 차감
+    public void decreaseBalance(BigDecimal amount) {
+        validateAmount(amount);
         if (this.balance.compareTo(amount) < 0) {
             throw new InsufficientBalanceException(amount, this.balance);
         }
         this.balance = this.balance.subtract(amount);
     }
 
-    public void addBalance(BigDecimal amount) {
-        this.balance = this.balance.add(amount);
+    // 검증 메서드
+    private static void validateUserId(Long userId) {
+        if (userId == null || userId <= 0) {
+            throw new InvalidAccountException("유효하지 않은 사용자 ID");
+        }
     }
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+    private static void validateBalance(BigDecimal balance) {
+        if (balance == null || balance.compareTo(BigDecimal.ZERO) < 0) {
+            throw new InvalidAccountException("잔고는 음수일 수 없습니다");
+        }
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    private static void validateAmount(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidAccountException("금액은 0보다 커야 합니다");
+        }
     }
 }
 ```
+
+**예외 클래스:**
+- `AccountNotFoundException` - 계좌 미존재
+- `InsufficientBalanceException` - 잔고 부족
+- `InvalidAccountException` - 유효성 검증 실패
 
 ---
 
@@ -913,11 +932,14 @@ psql -U postgres -d trade_db < /backups/trade_db_20251226.sql
 
 ## 다음 단계
 
-1. **Flyway 마이그레이션 파일 작성**
-2. **JPA Entity 생성 및 Repository 구현**
-3. **테스트 데이터 삽입 스크립트 작성**
-4. **성능 테스트 및 인덱스 튜닝**
-5. **운영 DB (PostgreSQL) 환경 구축**
+1. ✅ **Account Entity 생성 및 Repository 구현** (완료)
+2. ⏳ **Market 도메인 구현** (PriceTick - Redis 캐시)
+3. ⏳ **Order Entity 및 Repository 구현**
+4. ⏳ **Position Entity 및 Repository 구현**
+5. ⏳ **User Entity 및 Auth 구현**
+6. ⏳ **Flyway 마이그레이션 파일 작성** (운영 DB 전환 시)
+7. ⏳ **성능 테스트 및 인덱스 튜닝**
+8. ⏳ **운영 DB (PostgreSQL) 환경 구축**
 
 ---
 

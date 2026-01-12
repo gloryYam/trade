@@ -852,13 +852,16 @@ public class HealthCheckController {
 
 1. **Phase 1 (현재):** 기본 기능 구현
    - ✅ Spring Boot 프로젝트 생성
-   - ⏳ WebSocket 가격 수집
-   - ⏳ Redis 캐싱
-   - ⏳ 주문 처리 기본 로직
+   - ✅ Account 도메인 완성 (Entity, Repository, Service, Controller, DTO)
+   - ✅ Account 단위 테스트 완성 (22개 테스트 케이스)
+   - ✅ ApiResponse 공통 응답 DTO
+   - ⏳ Market 도메인 (WebSocket 가격 수집, Redis 캐싱)
+   - ⏳ Order 도메인 (주문 처리 기본 로직)
 
 2. **Phase 2:** 동시성 & 보안
+   - Position 도메인
    - Redisson 분산 락
-   - JWT 인증
+   - JWT 인증 (Auth 도메인)
    - 주문 정합성 테스트
 
 3. **Phase 3:** 이벤트 & 확장
@@ -870,3 +873,23 @@ public class HealthCheckController {
    - 모니터링 대시보드
    - 알람 설정
    - CI/CD 파이프라인
+
+---
+
+## 구현 현황 (2025-01-12 기준)
+
+### 완료된 도메인
+
+| 도메인 | 상태 | 구현 내용 |
+|--------|------|----------|
+| **Account** | ✅ 완료 | Entity, Repository, Service, Controller, DTO, 테스트 |
+| **Common** | ✅ 완료 | ApiResponse 공통 응답 DTO |
+
+### 미구현 도메인
+
+| 도메인 | 상태 | 예정 내용 |
+|--------|------|----------|
+| **Market** | ⏳ 예정 | Binance WebSocket, Redis 가격 캐시 |
+| **Order** | ⏳ 예정 | 주문 처리, 분산 락 |
+| **Position** | ⏳ 예정 | 포지션 관리, 손익 계산 |
+| **Auth** | ⏳ 예정 | JWT 인증, 로그인/회원가입 |
