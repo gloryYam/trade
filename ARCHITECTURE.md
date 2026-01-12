@@ -884,12 +884,14 @@ public class HealthCheckController {
 |--------|------|----------|
 | **Account** | ✅ 완료 | Entity, Repository, Service, Controller, DTO, 테스트 |
 | **Common** | ✅ 완료 | ApiResponse 공통 응답 DTO |
+| **Market** | 🔄 진행중 | `PriceTick` 레코드, `LatestPriceRedisStore` (Redis 저장 로직) 구현 완료 |
 
-### 미구현 도메인
+### 미구현 및 예정 작업
 
 | 도메인 | 상태 | 예정 내용 |
 |--------|------|----------|
-| **Market** | ⏳ 예정 | Binance WebSocket, Redis 가격 캐시 |
+| **Market** | ⏳ 예정 | 1. `LatestPriceRedisStore` 테스트 작성<br>2. Binance WebSocket 연동 |
 | **Order** | ⏳ 예정 | 주문 처리, 분산 락 |
 | **Position** | ⏳ 예정 | 포지션 관리, 손익 계산 |
 | **Auth** | ⏳ 예정 | JWT 인증, 로그인/회원가입 |
+
